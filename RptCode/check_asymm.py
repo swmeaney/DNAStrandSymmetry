@@ -555,7 +555,8 @@ def FHK6(rpt_list, global_dist_file, tmp_file = None):
     
     D = global_d(global_dist_file)
 
-    d_global = mean(D.values())
+    # SWM 2015-10-21 set type to list for python 3
+    d_global = mean(list(D.values()))    
 
     q_symm_list = []
     d_symm_list = []
@@ -634,13 +635,14 @@ def test_partitions(G, asymm_alg, tmp_file, fp = sys.stdout, rfp = sys.stdout):
 
             T = asymm_alg(R, tmp_file)
 
-            #s = "{part_name:<15}{chr_name:<10}{start:<15}{finish:<15}{strand}{num_bases:<10}".format(part_name = name, chr_name = chr_name, start = partition_start, finish = partition_finish, strand = strand, num_bases = total_bases)
-            #s += "".join(["{<:15}".format(x) for x in other_info])
-            #s += "{:<15}".format(str(T[3]))
-            #fp.write(s + "\n")
+            s = "{part_name:<15}{chr_name:<10}{start:<15}{finish:<15}{strand:<5}{num_bases:<10}".format(part_name = name, chr_name = chr_name, start = partition_start, finish = partition_finish, strand = strand, num_bases = total_bases)
+            s += "".join(["{<:15}".format(x) for x in other_info])
+            s += "{:<15}".format(str(T[3]))
+            fp.write(s + "\n")
 
             s = "{chr_name:<10}{start:<15}{finish:<15}".format(chr_name=chr_name, start=partition_start, finish=partition_finish)
-            s += "{BIC_symm:<15}{BIC_asymm:<15}{asymm:<10}".format(BIC_symm=T[1], BIC_asymm=T[2], asymm = str(T[-2]))
+            # SWM 2015-10-15 - added forced conversion to string after field name
+            s += "{BIC_symm!s:<15}{BIC_asymm!s:<15}{asymm!s:<10}".format(BIC_symm=T[1], BIC_asymm=T[2], asymm = str(T[-2]))
             s += " ".join([str(v) for v in T[-1].flat]) if T[-1] is not None else "ERROR"
             (fp if T[-2] else rfp).write(s + "\n")
                 
