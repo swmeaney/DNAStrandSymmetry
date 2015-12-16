@@ -36,6 +36,10 @@ top_line_re = re.compile("(\d+)\s+" + float_re + "\s+" + float_re + "\s+" +
                          + "\(?(\d+)\)?" + "\s+(\d+)\s+\(?(\d+)\)?\s+(\d+)\s*")
 complement_re = re.compile("^C?\s+(\(|[A-Z]+)")
 first_lineAL = re.compile("^\s+[chr]")
+#added for A. thaliana .align files - SWM
+first_lineAT = re.compile("^\s+\d+\s+\d+\s+[ACGT-]+\s+\d+\s+")
+numstr = re.compile("\d+")
+
 comp_line = re.compile("^C?\s+(\(|[A-Z]+)")
 rm_prnth = re.compile("^\(")
 out_header = re.compile("^[A-Z|a-z]")
@@ -158,7 +162,8 @@ class AlignFile:
                 firstLineFlag = 1
         
             #looks for the query sequence if the typical first line is missing
-            elif re.match(first_lineAL,line) and firstLineFlag == 0:
+            #added match first_lineAT for A. thaliana .align files - SWM
+            elif (re.match(first_lineAL,line) or re.match(first_lineAT,line)) and firstLineFlag == 0:
 
                 if r_coords.search(line):
                     r = r_coords.search(line)
@@ -170,6 +175,9 @@ class AlignFile:
                 
                 if atypStartCountQ == 0:
                     self.querySeq = SeqName.group(1).rstrip()
+                    # .align files with e.g. "1" instead of "chr1" - SWM
+                    if re.match(numstr, self.querySeq):
+                        self.querySeq = "chr" + self.querySeq                    
                     self.posQueryBeg = int(r.group(1))-1
                     self.posQueryEnd = int(r.group(3))
                     atypStartCountQ = atypStartCountQ + 1
@@ -381,7 +389,10 @@ class OutFile:
         self.percIns = float(lineArr[3])        
         
         # Set querySeq
-        self.querySeq = lineArr[4]              
+        self.querySeq = lineArr[4]
+        # .out files with e.g. "1" instead of "chr1" - SWM
+        if re.match(numstr, self.querySeq):
+            self.querySeq = "chr" + self.querySeq         
         
         # Set posQueryBeg
         self.posQueryBeg = int(lineArr[5])-1
